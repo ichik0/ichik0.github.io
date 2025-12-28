@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const fallback = document.getElementById('fallback')
   const centerBtn = document.getElementById('centerBtn')
   const exportBtn = document.getElementById('exportPdf')
-  const exportMarkmapBtn = document.getElementById('exportMarkmap')
 
   const uid = () => 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
 
@@ -291,39 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   }
 
-  // export current book as Markmap markdown file (.mm.md)
-  if (exportMarkmapBtn) {
-    exportMarkmapBtn.addEventListener('click', () => {
-      const book = books.find(b=>b.id===selectedBookId)
-      if (!book) return
-
-      let md = `# ${book.title || 'Livro'}\n\n`
-
-      book.chapters.forEach((ch, i) => {
-        md += `## ${ch.title || 'Capítulo ' + (i+1)}\n`
-        if (ch.definitions.length) {
-          md += `### Termos\n`
-          ch.definitions.forEach((d, idx) => {
-            md += `- **${d.termo || 'Termo ' + (idx+1)}**: ${d.definicao || ''}\n`
-          })
-        }
-        if (ch.propositions.length) {
-          md += `### Proposições\n`
-          ch.propositions.forEach(p => md += `- ${p.text || ''}\n`)
-        }
-        md += '\n'
-      })
-
-      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' })
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `${(book.title || 'livro').replace(/\s+/g,'_')}.mm.md`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-    })
-  }
-
   function escapeHtml(s) { return (s === undefined || s === null) ? '' : String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
 
   // initial render
@@ -335,3 +301,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window._adler = { books, saveBooks }
 })
+
