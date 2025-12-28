@@ -1,49 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Reading App</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reading App</title>
+
+<link rel="stylesheet" href="style.css">
+
+<!-- Sortable -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" defer></script>
+<!-- D3 -->
+<script src="https://d3js.org/d3.v7.min.js" defer></script>
+<!-- Markmap -->
+<script src="https://cdn.jsdelivr.net/npm/markmap-lib@0.15.4/dist/browser/index.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.15.4/dist/browser/index.min.js" defer></script>
+<!-- markdown-it and html2pdf -->
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js" defer></script>
+
+<!-- App -->
+<script src="app.js" defer></script>
 </head>
 <body>
+<main>
+  <div class="layout">
+    <!-- left: livros -->
+    <aside class="sidebar">
+      <div class="panel books-panel">
+        <div class="books-header">
+          <h3 style="margin:0">Livros</h3>
+          <button id="addBook" class="primary-card">+ Livro</button>
+        </div>
+        <div id="booksList" class="books-list" aria-live="polite"></div>
+      </div>
+    </aside>
 
-<div class="app">
+    <!-- center: editor OR empty state -->
+    <section class="editor">
+      <div id="emptyState" class="panel empty-panel">
+        <h2>Comece adicionando um livro</h2>
+        <p class="muted">Clique em “+ Livro” à esquerda para criar o primeiro livro.</p>
+      </div>
 
-  <aside class="sidebar">
-    <h2>Livros</h2>
-    <div id="booksList"></div>
-    <button id="addBook" class="primary-card">+ Adicionar livro</button>
-  </aside>
+      <div id="editorPanel" class="panel editor-panel hidden">
+        <h2>Editor</h2>
+        <label>Título</label>
+        <input id="bookTitle" placeholder="Título do livro">
 
-  <main class="main">
+        <label>Tipo do livro</label>
+        <div class="type-select" role="radiogroup" aria-label="Tipo do livro">
+          <div class="type-box" data-type="teorico" role="radio" tabindex="0">Teórico</div>
+          <div class="type-box" data-type="pratico" role="radio" tabindex="0">Prático</div>
+        </div>
 
-    <section id="emptyState" class="empty">
-      <p>Comece adicionando um livro</p>
-    </section>
+        <label>Descrição geral (Regra 2)</label>
+        <textarea id="bookDescription" placeholder="Frase curta sobre o que o livro trata"></textarea>
 
-    <section id="editorSection" class="hidden">
-      <h2>Editor</h2>
+        <hr style="margin:14px 0">
 
-      <div id="bookEditor"></div>
-
-      <div class="export-bar">
-        <button id="exportPdf" class="primary-card">Exportar PDF</button>
+        <h3>Capítulos</h3>
+        <div class="controls" style="margin-bottom:10px">
+          <button id="addChapter" class="primary-card">+ Capítulo</button>
+        </div>
+        <div id="chapters" class="chapters"></div>
       </div>
     </section>
 
-    <section id="visualSection" class="hidden">
-      <h2>Visualização estrutural</h2>
-      <div id="markmapContainer"></div>
-      <button id="centerMap" class="secondary-card">Centralizar</button>
-    </section>
+    <!-- right: visual -->
+    <aside id="visualPanel" class="visual-panel hidden">
+      <div class="panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <h2 style="margin:0">Visualização estrutural</h2>
+        </div>
 
-  </main>
-</div>
+        <div id="visual-wrap" style="margin-top:12px">
+          <svg id="markmap" width="100%" height="520" preserveAspectRatio="xMinYMin meet"></svg>
+          <div id="fallback" class="fallback hidden" aria-hidden="true"></div>
+        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-lib@0.15.4/dist/browser/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.15.4/dist/browser/index.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="app.js"></script>
+        <!-- controls centered below visualization -->
+        <div class="visual-controls-below" style="margin-top:12px;display:flex;justify-content:center;gap:12px">
+          <button id="centerBtn" class="small">Centralizar</button>
+          <button id="exportPdf" class="primary-card">Exportar PDF</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
 </body>
 </html>
