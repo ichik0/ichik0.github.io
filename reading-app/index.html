@@ -5,23 +5,61 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Reading App</title>
 
+<!-- Medieval fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
-<!-- Sortable -->
+<!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" defer></script>
-<!-- D3 -->
 <script src="https://d3js.org/d3.v7.min.js" defer></script>
-<!-- Markmap -->
 <script src="https://cdn.jsdelivr.net/npm/markmap-lib@0.15.4/dist/browser/index.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.15.4/dist/browser/index.min.js" defer></script>
-<!-- markdown-it and html2pdf -->
 <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js" defer></script>
 
-<!-- App -->
 <script src="app.js" defer></script>
 </head>
 <body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <h1 class="brand">Reading App</h1>
+        <p class="strap">Ferramenta de leitura analítica</p>
+      </div>
+
+      <div class="hero-right">
+        <!-- Dragon eye mascot -->
+        <svg id="mascot" viewBox="0 0 140 140" width="140" height="140" aria-hidden="true">
+          <defs>
+            <radialGradient id="eyeG" cx="40%" cy="40%" r="80%">
+              <stop offset="0%" stop-color="#fff8e6" stop-opacity="0.95"/>
+              <stop offset="45%" stop-color="#ffd88a" stop-opacity="0.95"/>
+              <stop offset="100%" stop-color="#8a2b1f" stop-opacity="0.95"/>
+            </radialGradient>
+            <radialGradient id="irisG" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#ffe7c0"/>
+              <stop offset="50%" stop-color="#d98f3a"/>
+              <stop offset="100%" stop-color="#7b2b18"/>
+            </radialGradient>
+          </defs>
+
+          <!-- eyelid / shape -->
+          <path d="M10,70 C10,20 40,10 70,10 C100,10 130,20 130,70 C130,120 100,130 70,130 C40,130 10,120 10,70 Z"
+                fill="url(#eyeG)" stroke="#4b2f1d" stroke-width="3" />
+
+          <!-- iris -->
+          <ellipse id="iris" cx="70" cy="66" rx="34" ry="26" fill="url(#irisG)" />
+
+          <!-- slit pupil (a tall thin ellipse rotated) -->
+          <ellipse id="pupil" cx="70" cy="66" rx="6" ry="20" fill="#0b0b0b" />
+
+          <!-- highlight -->
+          <circle cx="82" cy="54" r="4" fill="#fff8e6" opacity="0.9" />
+        </svg>
+      </div>
+    </div>
+  </header>
+
 <main>
   <div class="layout">
     <!-- left: livros -->
@@ -35,7 +73,7 @@
       </div>
     </aside>
 
-    <!-- center: editor OR empty state -->
+    <!-- center: editor -->
     <section class="editor">
       <div id="emptyState" class="panel empty-panel">
         <h2>Comece adicionando um livro</h2>
@@ -47,19 +85,13 @@
         <label>Título</label>
         <input id="bookTitle" placeholder="Título do livro">
 
-        <label>Tipo do livro</label>
-        <div class="type-select" role="radiogroup" aria-label="Tipo do livro">
-          <div class="type-box" data-type="teorico" role="radio" tabindex="0">Teórico</div>
-          <div class="type-box" data-type="pratico" role="radio" tabindex="0">Prático</div>
-        </div>
-
         <label>Descrição geral</label>
         <textarea id="bookDescription" placeholder="Frase curta sobre o que o livro trata"></textarea>
 
-        <hr style="margin:14px 0">
+        <hr style="margin:12px 0">
 
         <h3>Capítulos</h3>
-        <div class="controls" style="margin-bottom:10px">
+        <div class="controls" style="margin-bottom:8px">
           <button id="addChapter" class="primary-card">+ Capítulo</button>
         </div>
         <div id="chapters" class="chapters"></div>
@@ -68,19 +100,18 @@
 
     <!-- right: visual -->
     <aside id="visualPanel" class="visual-panel hidden">
-      <div class="panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div class="panel ornamented">
+        <div class="visual-head">
           <h2 style="margin:0">Visualização estrutural</h2>
         </div>
 
-        <div id="visual-wrap" style="margin-top:12px">
+        <div id="visual-wrap" style="margin-top:8px">
           <svg id="markmap" width="100%" height="520" preserveAspectRatio="xMinYMin meet"></svg>
           <div id="fallback" class="fallback hidden" aria-hidden="true"></div>
         </div>
 
-        <!-- controls centered below visualization -->
-        <div class="visual-controls-below" style="margin-top:12px;display:flex;justify-content:center;gap:12px">
-          <button id="centerBtn" class="small">Centralizar</button>
+        <div class="visual-controls-below" style="margin-top:10px;display:flex;justify-content:center;gap:10px">
+          <button id="centerBtn" class="primary-card small center-btn">Centralizar</button>
           <button id="exportPdf" class="primary-card">Exportar PDF</button>
         </div>
       </div>
@@ -89,4 +120,3 @@
 </main>
 </body>
 </html>
-
