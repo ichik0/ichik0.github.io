@@ -1,4 +1,4 @@
-// app.js — deletions diretas e export PDF sem duplicar título
+// app.js — deletions diretas, export PDF, export Markmap, center button
 document.addEventListener('DOMContentLoaded', () => {
   const STORAGE_KEY = 'adler_books_v1'
   let books = loadBooks()
@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fallback = document.getElementById('fallback')
   const centerBtn = document.getElementById('centerBtn')
   const exportBtn = document.getElementById('exportPdf')
+  const exportMarkmapBtn = document.getElementById('exportMarkmap')
 
   const uid = () => 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
 
@@ -33,12 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // add book
-  document.getElementById('addBook').addEventListener('click', () => {
-    const newBook = { id: uid(), title:'Livro sem título', description:'', type:'teorico', chapters:[] }
-    books.unshift(newBook)
-    selectedBookId = newBook.id
-    saveBooks(); renderBooksList(); renderEditor()
-  })
+  const addBookBtn = document.getElementById('addBook')
+  if (addBookBtn) {
+    addBookBtn.addEventListener('click', () => {
+      const newBook = { id: uid(), title:'Livro sem título', description:'', type:'teorico', chapters:[] }
+      books.unshift(newBook)
+      selectedBookId = newBook.id
+      saveBooks(); renderBooksList(); renderEditor()
+    })
+  }
 
   function renderBooksList() {
     const list = document.getElementById('booksList'); list.innerHTML = ''
@@ -113,9 +117,12 @@ document.addEventListener('DOMContentLoaded', () => {
       b.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); b.click() } }
     })
 
-    document.getElementById('addChapter').onclick = () => {
-      book.chapters.push({ title:'Capítulo sem título', description:'', definitions:[], propositions:[] })
-      saveBooks(); renderEditor(); updateMap()
+    const addChapterBtn = document.getElementById('addChapter')
+    if (addChapterBtn) {
+      addChapterBtn.onclick = () => {
+        book.chapters.push({ title:'Capítulo sem título', description:'', definitions:[], propositions:[] })
+        saveBooks(); renderEditor(); updateMap()
+      }
     }
 
     book.chapters.forEach((ch, ci) => {
@@ -256,31 +263,66 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // export current book markdown to PDF (no duplicated title)
-  exportBtn.addEventListener('click', () => {
-    const book = books.find(b=>b.id===selectedBookId)
-    if (!book) return
-    // build markdown WITHOUT top-level title (we will add H1 in HTML)
-    let md = ''
-    book.chapters.forEach((ch, i) => {
-      md += `## ${ch.title || 'Capítulo ' + (i+1)}\n`
-      if (ch.definitions.length) { md += `### Termos\n`; ch.definitions.forEach((d, idx) => md += `- **${d.termo || 'Termo ' + (idx+1)}**: ${d.definicao || ''}\n`) }
-      if (ch.propositions.length) { md += `### Proposições\n`; ch.propositions.forEach(p => md += `- ${p.text || ''}\n`) }
-      md += '\n'
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      const book = books.find(b=>b.id===selectedBookId)
+      if (!book) return
+      // build markdown WITHOUT top-level title (we will add H1 in HTML)
+      let md = ''
+      book.chapters.forEach((ch, i) => {
+        md += `## ${ch.title || 'Capítulo ' + (i+1)}\n`
+        if (ch.definitions.length) { md += `### Termos\n`; ch.definitions.forEach((d, idx) => md += `- **${d.termo || 'Termo ' + (idx+1)}**: ${d.definicao || ''}\n`) }
+        if (ch.propositions.length) { md += `### Proposições\n`; ch.propositions.forEach(p => md += `- ${p.text || ''}\n`) }
+        md += '\n'
+      })
+      const mdIt = window.markdownit ? window.markdownit() : null
+      const html = mdIt ? mdIt.render(md) : `<pre>${escapeHtml(md)}</pre>`
+      const tmp = document.createElement('div')
+      tmp.style.padding = '18px'; tmp.style.fontFamily = 'Inter, system-ui, Arial'
+      tmp.innerHTML = `<h1>${escapeHtml(book.title || 'Livro')}</h1>` + html
+      document.body.appendChild(tmp)
+      try {
+        html2pdf().from(tmp).set({ margin: 12, filename: `${(book.title||'livro').replace(/\s+/g,'_')}.pdf`, html2canvas: { scale: 1.5 } }).save().finally(()=> { document.body.removeChild(tmp) })
+      } catch (e) {
+        console.error('Export failed', e)
+        document.body.removeChild(tmp)
+        alert('Erro ao exportar PDF. Veja console.')
+      }
     })
-    const mdIt = window.markdownit ? window.markdownit() : null
-    const html = mdIt ? mdIt.render(md) : `<pre>${escapeHtml(md)}</pre>`
-    const tmp = document.createElement('div')
-    tmp.style.padding = '18px'; tmp.style.fontFamily = 'Inter, system-ui, Arial'
-    tmp.innerHTML = `<h1>${escapeHtml(book.title || 'Livro')}</h1>` + html
-    document.body.appendChild(tmp)
-    try {
-      html2pdf().from(tmp).set({ margin: 12, filename: `${(book.title||'livro').replace(/\s+/g,'_')}.pdf`, html2canvas: { scale: 1.5 } }).save().finally(()=> { document.body.removeChild(tmp) })
-    } catch (e) {
-      console.error('Export failed', e)
-      document.body.removeChild(tmp)
-      alert('Erro ao exportar PDF. Veja console.')
-    }
-  })
+  }
+
+  // export current book as Markmap markdown file (.mm.md)
+  if (exportMarkmapBtn) {
+    exportMarkmapBtn.addEventListener('click', () => {
+      const book = books.find(b=>b.id===selectedBookId)
+      if (!book) return
+
+      let md = `# ${book.title || 'Livro'}\n\n`
+
+      book.chapters.forEach((ch, i) => {
+        md += `## ${ch.title || 'Capítulo ' + (i+1)}\n`
+        if (ch.definitions.length) {
+          md += `### Termos\n`
+          ch.definitions.forEach((d, idx) => {
+            md += `- **${d.termo || 'Termo ' + (idx+1)}**: ${d.definicao || ''}\n`
+          })
+        }
+        if (ch.propositions.length) {
+          md += `### Proposições\n`
+          ch.propositions.forEach(p => md += `- ${p.text || ''}\n`)
+        }
+        md += '\n'
+      })
+
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${(book.title || 'livro').replace(/\s+/g,'_')}.mm.md`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    })
+  }
 
   function escapeHtml(s) { return (s === undefined || s === null) ? '' : String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
 
@@ -289,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderEditor()
 
   // center button wiring
-  centerBtn.addEventListener('click', () => scheduleFitCenter(40))
+  if (centerBtn) centerBtn.addEventListener('click', () => scheduleFitCenter(40))
 
   window._adler = { books, saveBooks }
 })
